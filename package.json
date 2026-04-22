@@ -1,0 +1,25 @@
+{
+  "name": "@juspay-tech/capacitor-react-hyperswitch",
+  "version": "0.1.0",
+  "description": "React bindings for the capacitor-hyperswitch plugin",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --external react",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "@juspay-tech/capacitor-hyperswitch": "*"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@juspay-tech/capacitor-hyperswitch": "*",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "capacitor-react-hyperswitch-example",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "build:plugin": "cd ../.. && npm run build && cd capacitor-react-hyperswitch/example-app",
+    "build:android": "npm run build:plugin && npm run build && npx cap sync android",
+    "build:ios": "npm run build:plugin && npm run build && npx cap sync ios",
+    "run:android": "npm run build:android && npx cap run android",
+    "run:ios": "npm run build:ios && npx cap run ios",
+    "open:android": "npm run build:android && npx cap open android",
+    "open:ios": "npm run build:ios && npx cap open ios",
+    "preview": "vite preview",
+    "server": "node mockServer.cjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "latest",
+    "@capacitor/ios": "^8.0.0",
+    "@juspay-tech/capacitor-hyperswitch": "1.1.0-alpha.1",
+    "@juspay-tech/capacitor-react-hyperswitch": "file:..",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "latest",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "typescript": "^5.6.3",
+    "vite": "^7.3.1"
+  }
+}

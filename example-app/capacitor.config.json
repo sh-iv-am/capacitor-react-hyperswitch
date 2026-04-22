@@ -1,0 +1,13 @@
+{
+  "appId": "com.example.reactplugin",
+  "appName": "react-example-app",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}
