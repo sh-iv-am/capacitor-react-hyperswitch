@@ -1,6 +1,6 @@
 {
   "name": "@juspay-tech/capacitor-react-hyperswitch",
-  "version": "0.1.0",
+  "version": "1.0.0-alpha.1",
   "description": "React bindings for the capacitor-hyperswitch plugin",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
