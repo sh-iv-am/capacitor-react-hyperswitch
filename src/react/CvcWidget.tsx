@@ -6,52 +6,31 @@ import React, {
   useRef,
   type CSSProperties,
 } from "react";
-import type { CvcWidget as ICvcWidget } from "capacitor-hyperswitch";
+import type {
+  CvcWidget as ICvcWidget,
+  CvcWidgetOptions,
+  PaymentEventData,
+} from "capacitor-hyperswitch";
 import { useHyperElementsContext } from "./HyperElements";
+import { registerWidget, unregisterWidget } from "./widget-registry";
 
-// ── Handle ────────────────────────────────────────────────────────────────────
-
-/**
- * Methods exposed on the `<CvcWidget>` ref.
- */
 export interface CvcWidgetHandle {
-  /** Programmatically unmount the widget. */
   unmount(): void;
 }
 
-// ── Props ─────────────────────────────────────────────────────────────────────
-
 export interface CvcWidgetProps {
-  /** Called once the native widget has been successfully mounted. */
+  id?: string;
+  options?: CvcWidgetOptions;
+  onChange?: (data?: PaymentEventData) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
   onReady?: () => void;
-  /** Extra CSS applied to the placeholder `<div>`. */
   style?: CSSProperties;
-  /** Extra class name applied to the placeholder `<div>`. */
   className?: string;
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
-
-/**
- * Drop-in React component that mounts the native `CVCWidget` view.
- * Must be rendered inside `<HyperElements>`.
- *
- * Typically used alongside `confirmWithCustomerDefaultPaymentMethod` or
- * `confirmWithCustomerLastUsedPaymentMethod` from `usePaymentSession()`.
- *
- * @example
- * ```tsx
- * const paymentSession = usePaymentSession();
- *
- * <CvcWidget style={{ minHeight: 50 }} />
- *
- * <button onClick={() => paymentSession?.confirmWithCustomerLastUsedPaymentMethod()}>
- *   Pay with saved card
- * </button>
- * ```
- */
 const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
-  function CvcWidget({ onReady, style, className }, ref) {
+  function CvcWidget({ id, options, onChange, onFocus, onBlur, onReady, style, className }, ref) {
     const { elements } = useHyperElementsContext();
 
     const reactId = useId();
@@ -62,17 +41,34 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
     useEffect(() => {
       if (!elements) return;
 
-      const widget = elements.create({ type: "cvcWidget" });
+      const widget = elements.create({ type: "cvcWidget", options });
       instanceRef.current = widget;
+
+      if (onChange || onFocus || onBlur) {
+        widget.on("change", (data) => {
+          if (onChange) onChange(data);
+          if ((onFocus || onBlur) && data?.type === "CVC_STATUS") {
+            const cvcStatus = (data?.payload as Record<string, unknown> | undefined)?.cvcStatus as Record<string, unknown> | undefined;
+            if (cvcStatus?.isCvcFocused && onFocus) onFocus();
+            if (cvcStatus?.isCvcBlur && onBlur) onBlur();
+          }
+        });
+      }
 
       widget.mount(`#${domId}`);
 
+      if (id) {
+        registerWidget(id, widget);
+      }
+
       if (onReady) {
-        // CvcWidget has no event system; fire onReady synchronously after mount.
         onReady();
       }
 
       return () => {
+        if (id) {
+          unregisterWidget(id);
+        }
         widget.unmount();
         instanceRef.current = null;
       };
@@ -83,11 +79,14 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
       ref,
       () => ({
         unmount() {
+          if (id) {
+            unregisterWidget(id);
+          }
           instanceRef.current?.unmount();
           instanceRef.current = null;
         },
       }),
-      [],
+      [id],
     );
 
     return (
