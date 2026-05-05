@@ -289,18 +289,29 @@ export interface CvcWidget {
 // Returned by Elements.getCustomerSavedPaymentMethods() and
 // InitPaymentSession.getCustomerSavedPaymentMethods().
 
+import type { PaymentMethod, PaymentMethodListData, PaymentMethodData } from "./paymentMethodTypes";
+
 export interface PaymentSessionHandler {
   /** The opaque ID used to route calls to the correct native handler instance. */
   readonly handlerId: string;
 
-  /** All saved payment methods for the customer. */
-  getCustomerSavedPaymentMethodData(): Promise<JSONValue>;
+  /**
+   * All saved payment methods for the customer.
+   * Returns properly typed PaymentMethod objects.
+   */
+  getCustomerSavedPaymentMethodData(): Promise<PaymentMethodListData>;
 
-  /** The customer's default saved payment method. */
-  getCustomerDefaultSavedPaymentMethodData(): Promise<JSONValue>;
+  /**
+   * The customer's default saved payment method.
+   * Returns a properly typed PaymentMethod object.
+   */
+  getCustomerDefaultSavedPaymentMethodData(): Promise<PaymentMethodData>;
 
-  /** The customer's most recently used saved payment method. */
-  getCustomerLastUsedPaymentMethodData(): Promise<JSONValue>;
+  /**
+   * The customer's most recently used saved payment method.
+   * Returns a properly typed PaymentMethod object.
+   */
+  getCustomerLastUsedPaymentMethodData(): Promise<PaymentMethodData>;
 
   /** Confirm with the default saved method (uses mounted CvcWidget if present). */
   confirmWithCustomerDefaultPaymentMethod(): Promise<PaymentResult>;

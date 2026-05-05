@@ -2,12 +2,37 @@
 export { HyperElements } from "./react/HyperElements";
 
 // ── Hooks ─────────────────────────────────────────────────────────────────────
-export { usePaymentSession } from "./react/hooks";
+export {
+  usePaymentSession,
+  useConfirmPayment,
+  type ConfirmPaymentState,
+  type ConfirmPaymentActions,
+  type UseConfirmPaymentReturn,
+} from "./react/hooks";
 
 // ── Components ────────────────────────────────────────────────────────────────
 export { default as PaymentElement } from "./react/PaymentElement";
 
 export { default as CvcWidget } from "./react/CvcWidget";
+
+// ── Payment Method Types & Parsers ────────────────────────────────────────────
+export type {
+  Card,
+  PaymentMethod,
+  PaymentMethodKind,
+  PaymentMethodData,
+  PaymentMethodListData,
+} from "./paymentMethodTypes";
+
+export {
+  parsePaymentMethod,
+  parsePaymentMethodList,
+  parseSinglePaymentMethod,
+} from "./paymentMethodTypes";
+
+// ── Payment Session Wrapper ───────────────────────────────────────────────────
+export type { TypedPaymentSessionHandler } from "./paymentSessionWrapper";
+export { wrapPaymentSessionHandler } from "./paymentSessionWrapper";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 export type {

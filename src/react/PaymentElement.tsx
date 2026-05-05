@@ -147,7 +147,7 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
       <div
         id={domId}
         className={className}
-        style={{ minHeight: 200, width: "100%", ...style }}
+        style={{ minHeight: 200, width: "100%", flex : 1, ...style }}
       />
     );
   },
