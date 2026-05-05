@@ -14,3 +14,11 @@ export type {
 
 export { default as CvcWidget } from "./react/CvcWidget";
 export type { CvcWidgetHandle, CvcWidgetProps } from "./react/CvcWidget";
+
+// ── Re-exported from capacitor-hyperswitch ────────────────────────────────────
+export type {
+  Elements,
+  CvcWidgetOptions,
+  CvcAppearance,
+  PaymentEventData,
+} from "capacitor-hyperswitch";
