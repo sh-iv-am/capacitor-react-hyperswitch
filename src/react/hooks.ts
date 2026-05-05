@@ -1,4 +1,4 @@
-import type { Elements } from "capacitor-hyperswitch";
+import type { Elements } from "../definitions";
 import { useHyperElementsContext } from "./HyperElements";
 
 /**

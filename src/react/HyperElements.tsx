@@ -5,7 +5,7 @@ import React, {
   useState,
   type ReactNode,
 } from "react";
-import type { Elements, HyperswitchSession } from "capacitor-hyperswitch";
+import type { Elements } from "../definitions";
 
 // ── Context ───────────────────────────────────────────────────────────────────
 
@@ -24,6 +24,14 @@ const HyperElementsContext = createContext<
 
 HyperElementsContext.displayName = "HyperElementsContext";
 
+// ── Structural type for session compatibility ─────────────────────────────────
+// Using structural typing to accept HyperswitchSession from any source
+// (capacitor-hyperswitch or capacitor-react-hyperswitch definitions)
+// Using `any` return type to accommodate TypeScript resolution differences
+interface HyperSessionLike {
+  elements(options: { sdkAuthorization: string }): Promise<any>;
+}
+
 // ── Provider props ────────────────────────────────────────────────────────────
 
 export interface HyperElementsProps {
@@ -32,7 +40,7 @@ export interface HyperElementsProps {
    * Accepts the session object directly or wrapped in a Promise for
    * parity with lazy-loaded patterns.
    */
-  hyper: HyperswitchSession | Promise<HyperswitchSession> | null;
+  hyper: HyperSessionLike | Promise<HyperSessionLike> | null;
   /**
    * Options forwarded to `session.elements(...)`.
    * `sdkAuthorization` is the client secret / session token from your server.
