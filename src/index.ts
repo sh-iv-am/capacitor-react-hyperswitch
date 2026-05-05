@@ -4,10 +4,8 @@ export { HyperElements } from "./react/HyperElements";
 // ── Hooks ─────────────────────────────────────────────────────────────────────
 export {
   usePaymentSession,
-  useConfirmPayment,
-  type ConfirmPaymentState,
-  type ConfirmPaymentActions,
-  type UseConfirmPaymentReturn,
+  useElements,
+  type UseElementsReturn,
 } from "./react/hooks";
 
 // ── Components ────────────────────────────────────────────────────────────────

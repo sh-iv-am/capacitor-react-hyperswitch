@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import type { Elements, JSONValue, PaymentResult } from "../definitions";
+import type { Elements, JSONValue, PaymentResult, UpdateIntentResult } from "../definitions";
 import { useHyperElementsContext } from "./HyperElements";
 import type { PaymentElementHandle } from "./PaymentElement";
 
@@ -8,170 +8,87 @@ import type { PaymentElementHandle } from "./PaymentElement";
  *
  * - Returns `null` while the session is still loading.
  * - Throws if called outside of `<HyperElements>`.
- *
- * Use this hook when you need direct access to session-level methods such as
- * `updateIntent`, `getCustomerDefaultSavedPaymentMethodData`, or
- * `confirmWithCustomerLastUsedPaymentMethod`.
- *
- * @example
- * ```tsx
- * function CheckoutForm() {
- *   const paymentSession = usePaymentSession();
- *
- *   const handleUpdate = async () => {
- *     const newToken = await fetchNewToken();
- *     await paymentSession?.updateIntent(() => Promise.resolve(newToken));
- *   };
- * }
- * ```
  */
 export function usePaymentSession(): Elements | null {
   const { elements } = useHyperElementsContext();
   return elements;
 }
 
-// ── Payment Confirmation Hook ─────────────────────────────────────────────────
+// ── Elements Hook ─────────────────────────────────────────────────────────────
 
-export interface ConfirmPaymentState {
-  /** Whether a confirmation is in progress */
-  isLoading: boolean;
-  /** The result of the last confirmation attempt */
-  result: PaymentResult | null;
-  /** Any error from the last confirmation attempt */
-  error: Error | null;
+export interface ElementsActions {
+  /** Confirm payment using a PaymentElement ref */
+  confirmPayment: (
+    paymentElementRef: React.RefObject<PaymentElementHandle | null>,
+    options?: { confirmParams?: JSONValue }
+  ) => Promise<PaymentResult>;
+  /** Update the payment intent with a new authorization */
+  updateIntent: (intentResolver: () => Promise<string>) => Promise<UpdateIntentResult>;
 }
 
-export interface ConfirmPaymentActions {
-  /** Trigger the payment confirmation */
-  confirm: (options?: { confirmParams?: JSONValue }) => Promise<PaymentResult>;
-  /** Reset the state to initial values */
-  reset: () => void;
+export interface UseElementsReturn extends ElementsActions {
+  /** The raw Elements session (null if not loaded) */
+  elements: Elements | null;
 }
-
-export type UseConfirmPaymentReturn = ConfirmPaymentState & ConfirmPaymentActions;
 
 /**
- * Hook for managing PaymentElement confirmation state.
- *
- * This hook provides a declarative way to handle payment confirmation with
- * built-in loading states and error handling. It maintains a registry of
- * the PaymentElement ref to ensure reliable access during confirmation.
- *
- * @param paymentElementRef - Ref to the PaymentElement component
- * @returns State and actions for payment confirmation
+ * Hook for accessing Elements with confirmPayment and updateIntent methods.
  *
  * @example
  * ```tsx
- * function CheckoutForm() {
+ * function Checkout() {
+ *   const element = useElements();
  *   const paymentRef = useRef<PaymentElementHandle>(null);
- *   const { confirm, isLoading, result, error, reset } = useConfirmPayment(paymentRef);
  *
- *   const handleSubmit = async () => {
- *     const result = await confirm({
- *       confirmParams: { return_url: window.location.origin }
- *     });
- *     if (result.type === 'completed') {
- *       // Handle success
- *     }
+ *   const handlePay = async () => {
+ *     const result = await element.confirmPayment(paymentRef);
+ *     // handle result
  *   };
  *
- *   return (
- *     <>
- *       <PaymentElement ref={paymentRef} />
- *       <button onClick={handleSubmit} disabled={isLoading}>
- *         {isLoading ? 'Processing...' : 'Pay'}
- *       </button>
- *       {error && <p>Error: {error.message}</p>}
- *       {result && <p>Status: {result.type}</p>}
- *     </>
- *   );
+ *   const handleAmountChange = async (newAmount) => {
+ *     await element.updateIntent(async () => {
+ *       const res = await fetch('/api/update', { ... });
+ *       return res.json().sdkAuthorization;
+ *     });
+ *   };
+ *
+ *   return <PaymentElement ref={paymentRef} />;
  * }
  * ```
  */
-export function useConfirmPayment(
-  paymentElementRef: React.RefObject<PaymentElementHandle | null>
-): UseConfirmPaymentReturn {
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<PaymentResult | null>(null);
-  const [error, setError] = useState<Error | null>(null);
+export function useElements(): UseElementsReturn {
+  const elements = usePaymentSession();
 
-  // Registry to track confirmation in-flight state
-  const confirmationRegistry = useRef<{
-    isConfirming: boolean;
-    abortController: AbortController | null;
-  }>({
-    isConfirming: false,
-    abortController: null,
-  });
+  const confirmPayment = useCallback(
+    async (
+      paymentElementRef: React.RefObject<PaymentElementHandle | null>,
+      options?: { confirmParams?: JSONValue }
+    ): Promise<PaymentResult> => {
+      const paymentElement = paymentElementRef.current;
 
-  const confirm = useCallback(
-    async (options?: { confirmParams?: JSONValue }): Promise<PaymentResult> => {
-      const element = paymentElementRef.current;
-
-      if (!element) {
-        const err = new Error("PaymentElement is not mounted");
-        setError(err);
-        throw err;
+      if (!paymentElement) {
+        throw new Error("PaymentElement is not mounted");
       }
 
-      // Prevent concurrent confirmations
-      if (confirmationRegistry.current.isConfirming) {
-        const err = new Error("Payment confirmation already in progress");
-        setError(err);
-        throw err;
-      }
-
-      // Set up abort controller for cancellation support
-      confirmationRegistry.current.abortController = new AbortController();
-      confirmationRegistry.current.isConfirming = true;
-
-      setIsLoading(true);
-      setError(null);
-      setResult(null);
-
-      try {
-        const paymentResult = await element.confirmPayment(options);
-
-        // Check if aborted
-        if (confirmationRegistry.current.abortController?.signal.aborted) {
-          const abortError = new Error("Payment confirmation was cancelled");
-          setError(abortError);
-          throw abortError;
-        }
-
-        setResult(paymentResult);
-        return paymentResult;
-      } catch (err) {
-        const errorInstance = err instanceof Error ? err : new Error(String(err));
-        setError(errorInstance);
-        throw errorInstance;
-      } finally {
-        setIsLoading(false);
-        confirmationRegistry.current.isConfirming = false;
-        confirmationRegistry.current.abortController = null;
-      }
+      return paymentElement.confirmPayment(options);
     },
-    [paymentElementRef]
+    []
   );
 
-  const reset = useCallback(() => {
-    // Cancel any in-flight confirmation
-    if (confirmationRegistry.current.abortController) {
-      confirmationRegistry.current.abortController.abort();
-    }
-    confirmationRegistry.current.isConfirming = false;
-    confirmationRegistry.current.abortController = null;
+  const updateIntent = useCallback(
+    async (intentResolver: () => Promise<string>): Promise<UpdateIntentResult> => {
+      if (!elements) {
+        throw new Error("Elements session is not initialized");
+      }
 
-    setIsLoading(false);
-    setResult(null);
-    setError(null);
-  }, []);
+      return elements.updateIntent(intentResolver);
+    },
+    [elements]
+  );
 
   return {
-    isLoading,
-    result,
-    error,
-    confirm,
-    reset,
+    elements,
+    confirmPayment,
+    updateIntent,
   };
 }
