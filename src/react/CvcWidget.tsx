@@ -6,13 +6,9 @@ import React, {
   useRef,
   type CSSProperties,
 } from "react";
-import type {
-  CvcWidget as ICvcWidget,
-  CvcWidgetOptions,
-  PaymentEventData,
-} from "capacitor-hyperswitch";
 import { useHyperElementsContext } from "./HyperElements";
 import { registerWidget, unregisterWidget } from "./widget-registry";
+import type { CvcWidget as CvcWidgetType, CvcWidgetOptions, PaymentEventData } from "../definitions";
 
 export interface CvcWidgetHandle {
   unmount(): void;
@@ -30,13 +26,13 @@ export interface CvcWidgetProps {
 }
 
 const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
-  function CvcWidget({ id, options, onChange, onFocus, onBlur, onReady, style, className }, ref) {
+  function CvcWidgetComponent({ id, options, onChange, onFocus, onBlur, onReady, style, className }, ref) {
     const { elements } = useHyperElementsContext();
 
     const reactId = useId();
     const domId = `hs-cvc-widget-${reactId.replace(/:/g, "")}`;
 
-    const instanceRef = useRef<ICvcWidget | null>(null);
+    const instanceRef = useRef<CvcWidgetType | null>(null);
 
     useEffect(() => {
       if (!elements) return;
@@ -47,7 +43,7 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
       let wasFocused = false;
 
       if (onChange || onFocus || onBlur) {
-        widget.on("change", (data) => {
+        widget.on("change", (data : any) => {
           if (onChange) onChange(data);
           if ((onFocus || onBlur) && data?.type === "CVC_STATUS") {
             const cvcStatus = (data?.payload as Record<string, unknown> | undefined)?.cvcStatus as Record<string, unknown> | undefined;

@@ -12,9 +12,6 @@
     "outDir": "dist",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "paths": {
-      "capacitor-hyperswitch": ["../capacitor-hyperswitch/src/index.ts"]
-    }
   },
   "include": ["src"]
 }

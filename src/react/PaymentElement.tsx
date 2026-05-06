@@ -6,14 +6,8 @@ import React, {
   useRef,
   type CSSProperties,
 } from "react";
-import type {
-  JSONValue,
-  PaymentEventData,
-  PaymentResult,
-} from "capacitor-hyperswitch";
-import type { PaymentElement as IPaymentElement } from "capacitor-hyperswitch";
 import { useHyperElementsContext } from "./HyperElements";
-
+import type { PaymentElement as PaymentElementType, PaymentEventData, PaymentResult, JSONValue } from "../definitions";
 // ── Handle (what callers get via ref) ─────────────────────────────────────────
 
 /**
@@ -86,7 +80,7 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
     const domId = `hs-payment-element-${reactId.replace(/:/g, "")}`;
 
     // Hold the live PaymentElement instance so the handle methods can reach it.
-    const instanceRef = useRef<IPaymentElement | null>(null);
+    const instanceRef = useRef<PaymentElementType | null>(null);
 
     useEffect(() => {
       if (!elements) return;
@@ -153,7 +147,7 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
       <div
         id={domId}
         className={className}
-        style={{ minHeight: 200, width: "100%", ...style }}
+        style={{ minHeight: 200, width: "100%", flex : 1, ...style }}
       />
     );
   },
