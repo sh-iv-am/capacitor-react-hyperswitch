@@ -44,13 +44,17 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
       const widget = elements.create({ type: "cvcWidget", options });
       instanceRef.current = widget;
 
+      let wasFocused = false;
+
       if (onChange || onFocus || onBlur) {
         widget.on("change", (data) => {
           if (onChange) onChange(data);
           if ((onFocus || onBlur) && data?.type === "CVC_STATUS") {
             const cvcStatus = (data?.payload as Record<string, unknown> | undefined)?.cvcStatus as Record<string, unknown> | undefined;
-            if (cvcStatus?.isCvcFocused && onFocus) onFocus();
-            if (cvcStatus?.isCvcBlur && onBlur) onBlur();
+            const isFocused = !!cvcStatus?.isCvcFocused;
+            if (isFocused && !wasFocused && onFocus) onFocus();
+            if (!isFocused && wasFocused && onBlur) onBlur();
+            wasFocused = isFocused;
           }
         });
       }
