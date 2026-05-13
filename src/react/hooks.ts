@@ -1,93 +1,102 @@
-import { useCallback, useRef, useState } from "react";
-import type { Elements, JSONValue, PaymentResult, UpdateIntentResult } from "../definitions";
+import { useCallback, useMemo } from "react";
+import type {
+  PaymentSession,
+  PaymentSessionConfiguration,
+  PaymentResult,
+  PaymentElementHandle,
+  ElementsActions,
+  CustomerSavedPaymentMethodsSession,
+} from "../definitions";
 import { useHyperElementsContext } from "./HyperElements";
-import type { PaymentElementHandle } from "./PaymentElement";
 
-/**
- * Returns the `Elements` session from the nearest `<HyperElements>` ancestor.
- *
- * - Returns `null` while the session is still loading.
- * - Throws if called outside of `<HyperElements>`.
- */
-export function usePaymentSession(): Elements | null {
+export function usePaymentSession(): PaymentSession | null {
+  const { paymentSession } = useHyperElementsContext();
+
+  const updateIntent = useCallback(
+    async (
+      intentResolver: () => Promise<PaymentSessionConfiguration>,
+    ): Promise<void> => {
+      if (!paymentSession) {
+        throw new Error("HyperElements is not initialized");
+      }
+
+      return paymentSession.updateIntent(intentResolver);
+    },
+    [paymentSession],
+  );
+
+  return useMemo(
+    () => (paymentSession ? { ...paymentSession, updateIntent } : paymentSession),
+    [paymentSession, updateIntent],
+  );
+}
+
+export function useElements(): ElementsActions {
   const { elements } = useHyperElementsContext();
-  return elements;
-}
-
-// ── Elements Hook ─────────────────────────────────────────────────────────────
-
-export interface ElementsActions {
-  /** Confirm payment using a PaymentElement ref */
-  confirmPayment: (
-    paymentElementRef: React.RefObject<PaymentElementHandle | null>,
-    options?: { confirmParams?: JSONValue }
-  ) => Promise<PaymentResult>;
-  /** Update the payment intent with a new authorization */
-  updateIntent: (intentResolver: () => Promise<string>) => Promise<UpdateIntentResult>;
-}
-
-export interface UseElementsReturn extends ElementsActions {
-  /** The raw Elements session (null if not loaded) */
-  elements: Elements | null;
-}
-
-/**
- * Hook for accessing Elements with confirmPayment and updateIntent methods.
- *
- * @example
- * ```tsx
- * function Checkout() {
- *   const element = useElements();
- *   const paymentRef = useRef<PaymentElementHandle>(null);
- *
- *   const handlePay = async () => {
- *     const result = await element.confirmPayment(paymentRef);
- *     // handle result
- *   };
- *
- *   const handleAmountChange = async (newAmount) => {
- *     await element.updateIntent(async () => {
- *       const res = await fetch('/api/update', { ... });
- *       return res.json().sdkAuthorization;
- *     });
- *   };
- *
- *   return <PaymentElement ref={paymentRef} />;
- * }
- * ```
- */
-export function useElements(): UseElementsReturn {
-  const elements = usePaymentSession();
 
   const confirmPayment = useCallback(
     async (
-      paymentElementRef: React.RefObject<PaymentElementHandle | null>,
-      options?: { confirmParams?: JSONValue }
+      paymentElement: React.RefObject<PaymentElementHandle | null> | string,
+      options?: { confirmParams?: Record<string, Object> },
     ): Promise<PaymentResult> => {
-      const paymentElement = paymentElementRef.current;
+      if (typeof paymentElement === "string") {
+        const element = document.getElementById(paymentElement);
 
-      if (!paymentElement) {
-        throw new Error("PaymentElement is not mounted");
+        if (!element) {
+          throw new Error(`Element with id "${paymentElement}" not found`);
+        }
+
+        return new Promise<PaymentResult>((resolve, _) => {
+          element.dispatchEvent(
+            new CustomEvent("confirmPayment", {
+              bubbles: true,
+              cancelable: true,
+              detail: {
+                options,
+                onResult: (result: PaymentResult) => {
+                  resolve(result);
+                },
+              },
+            }),
+          );
+        });
+      } else {
+        const paymentElementRef = paymentElement.current;
+
+        if (!paymentElementRef) {
+          throw new Error("PaymentElement is not mounted");
+        }
+
+        return paymentElementRef.confirmPayment(options);
       }
-
-      return paymentElement.confirmPayment(options);
     },
-    []
+    [],
   );
 
   const updateIntent = useCallback(
-    async (intentResolver: () => Promise<string>): Promise<UpdateIntentResult> => {
+    async (
+      intentResolver: () => Promise<PaymentSessionConfiguration>,
+    ): Promise<void> => {
       if (!elements) {
-        throw new Error("Elements session is not initialized");
+        throw new Error("HyperElements is not initialized");
       }
 
       return elements.updateIntent(intentResolver);
     },
-    [elements]
+    [elements],
   );
 
+  const getCustomerSavedPaymentMethods =
+    useCallback(async (): Promise<CustomerSavedPaymentMethodsSession> => {
+      if (!elements) {
+        throw new Error("HyperElements is not initialized");
+      }
+
+      return elements.getCustomerSavedPaymentMethods();
+    }, [elements]);
+
   return {
-    elements,
+    getCustomerSavedPaymentMethods,
     confirmPayment,
     updateIntent,
   };

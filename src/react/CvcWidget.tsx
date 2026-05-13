@@ -8,7 +8,11 @@ import React, {
 } from "react";
 import { useHyperElementsContext } from "./HyperElements";
 import { registerWidget, unregisterWidget } from "./widget-registry";
-import type { CvcWidget as CvcWidgetType, CvcWidgetOptions, PaymentEventData } from "../definitions";
+import type {
+  CvcWidget as CvcWidgetType,
+  CvcWidgetOptions,
+  PaymentEventData,
+} from "../definitions";
 
 export interface CvcWidgetHandle {
   unmount(): void;
@@ -26,7 +30,10 @@ export interface CvcWidgetProps {
 }
 
 const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
-  function CvcWidgetComponent({ id, options, onChange, onFocus, onBlur, onReady, style, className }, ref) {
+  function CvcWidgetComponent(
+    { id, options, onChange, onFocus, onBlur, onReady, style, className },
+    ref,
+  ) {
     const { elements } = useHyperElementsContext();
 
     const reactId = useId();
@@ -43,10 +50,12 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
       let wasFocused = false;
 
       if (onChange || onFocus || onBlur) {
-        widget.on("change", (data : any) => {
+        widget.on("change", (data: any) => {
           if (onChange) onChange(data);
           if ((onFocus || onBlur) && data?.type === "CVC_STATUS") {
-            const cvcStatus = (data?.payload as Record<string, unknown> | undefined)?.cvcStatus as Record<string, unknown> | undefined;
+            const cvcStatus = (
+              data?.payload as Record<string, unknown> | undefined
+            )?.cvcStatus as Record<string, unknown> | undefined;
             const isFocused = !!cvcStatus?.isCvcFocused;
             if (isFocused && !wasFocused && onFocus) onFocus();
             if (!isFocused && wasFocused && onBlur) onBlur();
@@ -93,7 +102,7 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
       <div
         id={domId}
         className={className}
-        style={{ minHeight: 50, width: "100%", ...style }}
+        style={{ minHeight: "inherit", width: "100%", ...style }}
       />
     );
   },
