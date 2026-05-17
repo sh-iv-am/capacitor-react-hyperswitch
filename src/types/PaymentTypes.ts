@@ -7,3 +7,9 @@ export interface PaymentEventData {
   type: string;
   payload: Record<string, string>;
 }
+
+
+export interface PaymentRequestData {
+  paymentMethodType: string;
+  [key: string]: any;
+}

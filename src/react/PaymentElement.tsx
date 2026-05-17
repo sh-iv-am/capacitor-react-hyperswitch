@@ -14,7 +14,16 @@ import type {
 
 const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
   function PaymentElement(
-    { id, options, onReady, onChange, onPaymentResult, className, style },
+    {
+      id,
+      options,
+      onReady,
+      onChange,
+      onPaymentResult,
+      onPaymentConfirmButtonClick,
+      className,
+      style,
+    },
     ref,
   ) {
     const { elements } = useHyperElementsContext();
@@ -45,6 +54,16 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
       });
       pe.onPaymentResult((data) => {
         onPaymentResult ? onPaymentResult(data) : null;
+      });
+      pe.onPaymentConfirmButtonClick((data) => {
+        if (onPaymentConfirmButtonClick) {
+          try {
+            return onPaymentConfirmButtonClick(data);
+          } catch (e) {
+            return false;
+          }
+        }
+        return true;
       });
 
       if (onReady) onReady();
