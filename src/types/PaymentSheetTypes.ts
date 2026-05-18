@@ -4,8 +4,7 @@ export type SubscriptionEvent =
   | "PAYMENT_METHOD_INFO_CARD"
   | "PAYMENT_METHOD_STATUS"
   | "FORM_STATUS"
-  | "PAYMENT_METHOD_INFO_ADDRESS"
-  | "CVC_STATUS";
+  | "PAYMENT_METHOD_INFO_BILLING_ADDRESS";
 
 export type Theme = "Default" | "Light" | "Dark" | "Minimal" | "FlatMinimal";
 export type LayoutType = "tabs" | "accordion";
@@ -176,6 +175,38 @@ export interface PaymentMethodConfig {
   message?: string;
 }
 
+type locale =
+  | "en"
+  | "he"
+  | "fr"
+  | "en-GB"
+  | "ar"
+  | "ja"
+  | "de"
+  | "fr-BE"
+  | "es"
+  | "ca"
+  | "pt"
+  | "it"
+  | "pl"
+  | "nl"
+  | "nI-BE"
+  | "sv"
+  | "ru"
+  | "lt"
+  | "cs"
+  | "sk"
+  | "ls"
+  | "cy"
+  | "el"
+  | "et"
+  | "fi"
+  | "nb"
+  | "bs"
+  | "da"
+  | "ms"
+  | "tr-CY";
+
 export interface PaymentSheetOptions {
   sdkAuthorization?: string;
   allowsDelayedPaymentMethods?: boolean;
@@ -202,7 +233,7 @@ export interface PaymentSheetOptions {
   savedPaymentSheetHeaderLabel?: string;
   subscribedEvents?: SubscriptionEvent[];
   hideConfirmButton?: boolean;
-  locale?: string;
+  locale?: locale;
   redirectionInfo?: RedirectionInfo;
   stickyPayButton?: boolean;
   paymentMethodLayout?: PaymentMethodLayout;
