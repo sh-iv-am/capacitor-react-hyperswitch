@@ -49,8 +49,9 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
 
       let wasFocused = false;
 
+      let onChangeListener: { remove: () => void } | null = null;
       if (onChange || onFocus || onBlur) {
-        widget.on("change", (data: any) => {
+        onChangeListener = widget.on("change", (data: any) => {
           if (onChange) onChange(data);
           if ((onFocus || onBlur) && data?.type === "CVC_STATUS") {
             const cvcStatus = (
@@ -79,6 +80,7 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
           unregisterWidget(id);
         }
         widget.unmount();
+        onChangeListener?.remove();
         instanceRef.current = null;
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps

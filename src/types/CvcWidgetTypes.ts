@@ -17,5 +17,5 @@ export interface CvcWidget {
   mount(selector: string, options?: CvcWidgetOptions): void;
   unmount(): void;
   destroy(): void;
-  on(event: string, handler?: (data?: PaymentEventData) => void): void;
+  on(event: string, handler?: (data?: PaymentEventData) => void): { remove: () => void };
 }
