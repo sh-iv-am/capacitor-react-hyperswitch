@@ -8,8 +8,9 @@ export interface PaymentEventData {
   payload: Record<string, string>;
 }
 
+type paymentMethodType = | "CARD" | "APPLE_PAY" | "GOOGLE_PAY" | "SAMSUNG_PAY" | "PAYPAL" ;
 
 export interface PaymentRequestData {
-  paymentMethodType: string;
+  paymentMethodType: paymentMethodType;
   [key: string]: any;
 }
