@@ -7,3 +7,10 @@ export interface PaymentEventData {
   type: string;
   payload: Record<string, string>;
 }
+
+type paymentMethodType = | "CARD" | "APPLE_PAY" | "GOOGLE_PAY" | "SAMSUNG_PAY" | "PAYPAL" ;
+
+export interface PaymentRequestData {
+  paymentMethodType: paymentMethodType;
+  [key: string]: any;
+}

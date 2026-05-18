@@ -14,7 +14,16 @@ import type {
 
 const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
   function PaymentElement(
-    { id, options, onReady, onChange, onPaymentResult, className, style },
+    {
+      id,
+      options,
+      onReady,
+      onChange,
+      onPaymentResult,
+      onPaymentConfirmButtonClick,
+      className,
+      style,
+    },
     ref,
   ) {
     const { elements } = useHyperElementsContext();
@@ -30,11 +39,12 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
       const pe = elements.create({ type: "paymentElement", options });
       instanceRef.current = pe;
 
+      let onChangeListeners: { remove: () => void }[] = [];
       if (onChange) {
-        pe.on("FORM_STATUS", onChange);
-        pe.on("PAYMENT_METHOD_STATUS", onChange);
-        pe.on("PAYMENT_METHOD_INFO_CARD", onChange);
-        pe.on("PAYMENT_METHOD_INFO_BILLING_ADDRESS", onChange);
+        onChangeListeners.push(pe.on("FORM_STATUS", onChange));
+        onChangeListeners.push(pe.on("PAYMENT_METHOD_STATUS", onChange));
+        onChangeListeners.push(pe.on("PAYMENT_METHOD_INFO_CARD", onChange));
+        onChangeListeners.push(pe.on("PAYMENT_METHOD_INFO_BILLING_ADDRESS", onChange));
       }
 
       pe.mount(`#${domId}`);
@@ -43,8 +53,18 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
         const { options, onResult } = (e as CustomEvent).detail;
         onResult(pe.confirmPayment(options));
       });
-      pe.onPaymentResult((data) => {
+      let onPaymentResultListener = pe.onPaymentResult((data) => {
         onPaymentResult ? onPaymentResult(data) : null;
+      });
+      let onConfirmClicklistener = pe.onPaymentConfirmButtonClick((data) => {
+        if (onPaymentConfirmButtonClick) {
+          try {
+            return onPaymentConfirmButtonClick(data);
+          } catch (e) {
+            return false;
+          }
+        }
+        return true;
       });
 
       if (onReady) onReady();
@@ -52,6 +72,9 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
       return () => {
         pe.unmount();
         instanceRef.current = null;
+        onPaymentResultListener?.remove();
+        onConfirmClicklistener?.remove();
+        onChangeListeners.forEach((listener) => listener.remove());
       };
     }, [elements]);
 

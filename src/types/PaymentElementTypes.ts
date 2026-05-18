@@ -1,9 +1,15 @@
-import { PaymentEventData, PaymentResult } from "./PaymentTypes";
+import { PaymentEventData, PaymentRequestData, PaymentResult } from "./PaymentTypes";
 import type { CSSProperties } from "react";
 
+type removeListener = {
+  remove: () => void;
+}
 export interface PaymentElement {
-  on(event: string, handler?: (data?: PaymentEventData) => void): void;
-  onPaymentResult(handler?: (data: PaymentResult) => void): void;
+  on(event: string, handler?: (data?: PaymentEventData) => void): removeListener;
+  onPaymentResult(handler?: (data: PaymentResult) => void): removeListener;
+  onPaymentConfirmButtonClick(
+    handler?: (data: PaymentRequestData) => boolean,
+  ): removeListener;
   collapse(): void;
   blur(): void;
   update(options: Record<string, Object>): void;
@@ -39,6 +45,7 @@ export interface PaymentElementProps {
   onReady?: () => void;
   onChange?: (data?: PaymentEventData) => void;
   onPaymentResult?: (data: PaymentResult) => void;
+  onPaymentConfirmButtonClick?: (data: PaymentRequestData) => boolean;
   className?: string;
   style?: CSSProperties;
 }
