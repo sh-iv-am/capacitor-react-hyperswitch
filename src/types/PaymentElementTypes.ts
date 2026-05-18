@@ -1,12 +1,15 @@
 import { PaymentEventData, PaymentRequestData, PaymentResult } from "./PaymentTypes";
 import type { CSSProperties } from "react";
 
+type removeListener = {
+  remove: () => void;
+}
 export interface PaymentElement {
-  on(event: string, handler?: (data?: PaymentEventData) => void): void;
-  onPaymentResult(handler?: (data: PaymentResult) => void): void;
+  on(event: string, handler?: (data?: PaymentEventData) => void): removeListener;
+  onPaymentResult(handler?: (data: PaymentResult) => void): removeListener;
   onPaymentConfirmButtonClick(
     handler?: (data: PaymentRequestData) => boolean,
-  ): void;
+  ): removeListener;
   collapse(): void;
   blur(): void;
   update(options: Record<string, Object>): void;
