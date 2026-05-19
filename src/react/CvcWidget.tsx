@@ -12,6 +12,7 @@ import type {
   CvcWidget as CvcWidgetType,
   CvcWidgetOptions,
   PaymentEventData,
+  removeListenerFunction,
 } from "../definitions";
 
 export interface CvcWidgetHandle {
@@ -41,6 +42,15 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
 
     const instanceRef = useRef<CvcWidgetType | null>(null);
 
+    function safeRemove(listener: removeListenerFunction | null | undefined): void {
+      if (!listener) return;
+      if (listener instanceof Promise) {
+        listener.then((h) => h.remove());
+      } else {
+        listener.remove();
+      }
+    }
+
     useEffect(() => {
       if (!elements) return;
 
@@ -49,7 +59,7 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
 
       let wasFocused = false;
 
-      let onChangeListener: { remove: () => void } | null = null;
+      let onChangeListener: removeListenerFunction | null = null;
       if (onChange || onFocus || onBlur) {
         onChangeListener = widget.on("change", (data: any) => {
           if (onChange) onChange(data);
@@ -80,7 +90,7 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
           unregisterWidget(id);
         }
         widget.unmount();
-        onChangeListener?.remove();
+        safeRemove(onChangeListener);
         instanceRef.current = null;
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps

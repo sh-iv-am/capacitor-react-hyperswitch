@@ -1,15 +1,15 @@
 export type PaymentMethod =
-  | "card"
-  | "wallet"
-  | "card_redirect"
-  | "pay_later"
-  | "bank_redirect"
-  | "open_banking"
-  | "bank_debit"
-  | "bank_transfer"
-  | "crypto"
-  | "reward"
-  | "gift_card"
+  | 'card'
+  | 'wallet'
+  | 'card_redirect'
+  | 'pay_later'
+  | 'bank_redirect'
+  | 'open_banking'
+  | 'bank_debit'
+  | 'bank_transfer'
+  | 'crypto'
+  | 'reward'
+  | 'gift_card'
   | string;
 
 export interface Card {
@@ -46,8 +46,18 @@ export interface PaymentMethodTypes {
   requires_cvv: boolean;
   customer_id: string;
   payment_experience: string[];
-  payment_method: PaymentMethod;
-  payment_method_str: PaymentMethod;
+  payment_method?: PaymentMethod;
+  payment_method_str?: PaymentMethod;
   card: Card | null;
   recurring_enabled: boolean;
+}
+
+export interface PaymentMethodData {
+  data: PaymentMethodTypes | null;
+  error?: string;
+}
+
+export interface PaymentMethodListData {
+  data: PaymentMethodTypes[];
+  error?: string;
 }

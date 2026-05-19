@@ -10,6 +10,7 @@ import type {
   PaymentElementHandle,
   PaymentElementProps,
   PaymentElement as PaymentElementType,
+  removeListenerFunction,
 } from "../definitions";
 
 const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
@@ -33,13 +34,22 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
 
     const instanceRef = useRef<PaymentElementType | null>(null);
 
+    function safeRemove(listener: removeListenerFunction | null | undefined): void {
+      if (!listener) return;
+      if (listener instanceof Promise) {
+        listener.then((h) => h.remove());
+      } else {
+        listener.remove();
+      }
+    }
+
     useEffect(() => {
       if (!elements) return;
 
       const pe = elements.create({ type: "paymentElement", options });
       instanceRef.current = pe;
 
-      let onChangeListeners: { remove: () => void }[] = [];
+      let onChangeListeners: removeListenerFunction[] = [];
       if (onChange) {
         onChangeListeners.push(pe.on("FORM_STATUS", onChange));
         onChangeListeners.push(pe.on("PAYMENT_METHOD_STATUS", onChange));
@@ -72,9 +82,9 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
       return () => {
         pe.unmount();
         instanceRef.current = null;
-        onPaymentResultListener?.remove();
-        onConfirmClicklistener?.remove();
-        onChangeListeners.forEach((listener) => listener.remove());
+        safeRemove(onPaymentResultListener);
+        safeRemove(onConfirmClicklistener);
+        onChangeListeners.forEach(safeRemove);
       };
     }, [elements]);
 

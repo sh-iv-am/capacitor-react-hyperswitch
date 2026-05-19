@@ -1,16 +1,16 @@
-import { ColorType, Font, Shapes } from "./AppearanceTypes";
+import { ColorType, Font, Shapes } from './AppearanceTypes';
 
 export type SubscriptionEvent =
-  | "PAYMENT_METHOD_INFO_CARD"
-  | "PAYMENT_METHOD_STATUS"
-  | "FORM_STATUS"
-  | "PAYMENT_METHOD_INFO_BILLING_ADDRESS";
+  | 'PAYMENT_METHOD_INFO_CARD'
+  | 'PAYMENT_METHOD_STATUS'
+  | 'FORM_STATUS'
+  | 'PAYMENT_METHOD_INFO_BILLING_ADDRESS'
 
-export type Theme = "Default" | "Light" | "Dark" | "Minimal" | "FlatMinimal" | "Brutal" | "Glass" | "Skeu" | "Clay" | "Charcoal" | "Soft";
-export type LayoutType = "tabs" | "accordion";
-export type PaymentMethodsArrangement = "grid" | "auto";
-export type RedirectionInfo = "hidden" | "shown";
-export type CvcIconDisplay = "shown" | "hidden";
+export type Theme = 'Default' | 'Light' | 'Dark' | 'Minimal' | 'FlatMinimal' | 'Brutal' | 'Glass' | 'Skeu' | 'Clay' | 'Charcoal' | 'Soft';
+export type LayoutType = 'tabs' | 'accordion';
+export type PaymentMethodsArrangement = 'grid' | 'auto';
+export type RedirectionInfo = 'hidden' | 'shown';
+export type CvcIconDisplay = 'shown' | 'hidden';
 
 export interface GroupingBehavior {
   displayInSeparateScreen?: boolean;
@@ -52,16 +52,8 @@ export interface PrimaryButton {
   colors?: PrimaryButtonColorType;
 }
 
-export type GooglePayButtonType =
-  | "BUY"
-  | "BOOK"
-  | "CHECKOUT"
-  | "DONATE"
-  | "ORDER"
-  | "PAY"
-  | "SUBSCRIBE"
-  | "PLAIN";
-export type GooglePayButtonStyle = "light" | "dark";
+export type GooglePayButtonType = 'BUY' | 'BOOK' | 'CHECKOUT' | 'DONATE' | 'ORDER' | 'PAY' | 'SUBSCRIBE' | 'PLAIN';
+export type GooglePayButtonStyle = 'light' | 'dark';
 
 export interface GooglePayThemeBaseStyle {
   light?: GooglePayButtonStyle;
@@ -69,21 +61,13 @@ export interface GooglePayThemeBaseStyle {
 }
 
 export interface GooglePayConfiguration {
-  visibility?: "hidden" | "shown";
+  visibility?: 'hidden' | 'shown';
   buttonType?: GooglePayButtonType;
   buttonStyle?: GooglePayThemeBaseStyle;
 }
 
-export type ApplePayButtonType =
-  | "buy"
-  | "setUp"
-  | "inStore"
-  | "donate"
-  | "checkout"
-  | "book"
-  | "subscribe"
-  | "plain";
-export type ApplePayButtonStyle = "white" | "whiteOutline" | "black";
+export type ApplePayButtonType = 'buy' | 'setUp' | 'inStore' | 'donate' | 'checkout' | 'book' | 'subscribe' | 'plain';
+export type ApplePayButtonStyle = 'white' | 'whiteOutline' | 'black';
 
 export interface ApplePayThemeBaseStyle {
   light?: ApplePayButtonStyle;
@@ -91,13 +75,13 @@ export interface ApplePayThemeBaseStyle {
 }
 
 export interface ApplePayConfiguration {
-  visibility?: "hidden" | "shown";
+  visibility?: 'hidden' | 'shown';
   buttonType?: ApplePayButtonType;
   buttonStyle?: ApplePayThemeBaseStyle;
 }
 
-export type PayPalButtonType = "paypal" | "checkout" | "buynow" | "pay";
-export type PayPalButtonStyle = "gold" | "blue" | "white" | "black" | "silver";
+export type PayPalButtonType = 'paypal' | 'checkout' | 'buynow' | 'pay';
+export type PayPalButtonStyle = 'gold' | 'blue' | 'white' | 'black' | 'silver';
 
 export interface PayPalThemeBaseStyle {
   light?: PayPalButtonStyle;
@@ -105,7 +89,7 @@ export interface PayPalThemeBaseStyle {
 }
 
 export interface PayPalConfiguration {
-  visibility?: "hidden" | "shown";
+  visibility?: 'hidden' | 'shown';
   buttonType?: PayPalButtonType;
   buttonStyle?: PayPalThemeBaseStyle;
 }
@@ -228,7 +212,7 @@ type locale =
   | "bs"
   | "da"
   | "ms"
-  | "tr-CY";
+  | "tr-CY"
 
 export interface PaymentSheetOptions {
   sdkAuthorization?: string;

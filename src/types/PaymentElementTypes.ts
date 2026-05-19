@@ -1,15 +1,11 @@
-import { PaymentEventData, PaymentRequestData, PaymentResult } from "./PaymentTypes";
+import { PaymentEventData, PaymentRequestData, PaymentResult } from './PaymentTypes';
 import type { CSSProperties } from "react";
 
-type removeListener = {
-  remove: () => void;
-}
+export type removeListenerFunction = Promise<{ remove: () => void }> | { remove: () => void };
 export interface PaymentElement {
-  on(event: string, handler?: (data?: PaymentEventData) => void): removeListener;
-  onPaymentResult(handler?: (data: PaymentResult) => void): removeListener;
-  onPaymentConfirmButtonClick(
-    handler?: (data: PaymentRequestData) => boolean,
-  ): removeListener;
+  on(event: string, handler?: (data?: PaymentEventData) => void): removeListenerFunction;
+  onPaymentResult(handler?: (data: PaymentResult) => void): removeListenerFunction;
+  onPaymentConfirmButtonClick(handler?: (data: PaymentRequestData) => boolean): removeListenerFunction;
   collapse(): void;
   blur(): void;
   update(options: Record<string, Object>): void;
@@ -18,19 +14,15 @@ export interface PaymentElement {
   mount(selector: string): void;
   focus(): void;
   clear(): void;
-  confirmPayment(options?: {
-    confirmParams?: Record<string, Object>;
-  }): Promise<PaymentResult>;
+  confirmPayment(options?: { confirmParams?: Record<string, Object> }): Promise<PaymentResult>;
 }
 
-import { PaymentSheetOptions as PaymentElementOptions } from "./PaymentSheetTypes";
+import { PaymentSheetOptions as PaymentElementOptions } from './PaymentSheetTypes';
 
 export { PaymentElementOptions };
 
 export interface PaymentElementHandle {
-  confirmPayment(options?: {
-    confirmParams?: Record<string, Object>;
-  }): Promise<PaymentResult>;
+  confirmPayment(options?: { confirmParams?: Record<string, Object> }): Promise<PaymentResult>;
   collapse(): void;
   focus(): void;
   blur(): void;
