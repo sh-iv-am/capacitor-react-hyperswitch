@@ -1,15 +1,15 @@
 export type PaymentMethod =
-  | 'card'
-  | 'wallet'
-  | 'card_redirect'
-  | 'pay_later'
-  | 'bank_redirect'
-  | 'open_banking'
-  | 'bank_debit'
-  | 'bank_transfer'
-  | 'crypto'
-  | 'reward'
-  | 'gift_card'
+  | "card"
+  | "wallet"
+  | "card_redirect"
+  | "pay_later"
+  | "bank_redirect"
+  | "open_banking"
+  | "bank_debit"
+  | "bank_transfer"
+  | "crypto"
+  | "reward"
+  | "gift_card"
   | string;
 
 export interface Card {

@@ -1,4 +1,4 @@
-import { Card, PaymentMethodTypes } from './PaymentMethodTypes';
+import { Card, PaymentMethodTypes } from "./PaymentMethodTypes";
 
 export type CustomerLastUsedPaymentMethodCard = Card;
 

@@ -1,5 +1,5 @@
-import { Elements } from './ElementsTypes';
-import { PaymentSession } from './PaymentSessionTypes';
+import { Elements } from "./ElementsTypes";
+import { PaymentSession } from "./PaymentSessionTypes";
 
 export interface OverrideEndpontConfiguration {
   customBackendEndpoint?: string;
@@ -9,15 +9,15 @@ export interface OverrideEndpontConfiguration {
   customAirborneEndpoint?: string;
 }
 
-export type HyperswitchEnvironment = 'sandbox' | 'production';
+export type HyperswitchEnvironment = "sandbox" | "production";
 
 export interface HyperswitchConfiguration {
   publishableKey: string;
   profileId?: string;
   environment?: HyperswitchEnvironment;
   customEndpoints?: {
-    commonEndpoint: string,
-    overrideEndpoints: OverrideEndpontConfiguration
+    commonEndpoint: string;
+    overrideEndpoints: OverrideEndpontConfiguration;
   };
 }
 
@@ -26,6 +26,8 @@ export interface PaymentSessionConfiguration {
 }
 
 export interface HyperswitchSession {
-  initPaymentSession(options: PaymentSessionConfiguration): Promise<PaymentSession>;
+  initPaymentSession(
+    options: PaymentSessionConfiguration,
+  ): Promise<PaymentSession>;
   elements(options: PaymentSessionConfiguration): Promise<Elements>;
 }

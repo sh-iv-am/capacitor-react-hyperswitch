@@ -26,7 +26,8 @@ export function usePaymentSession(): PaymentSession | null {
   );
 
   return useMemo(
-    () => (paymentSession ? { ...paymentSession, updateIntent } : paymentSession),
+    () =>
+      paymentSession ? { ...paymentSession, updateIntent } : paymentSession,
     [paymentSession, updateIntent],
   );
 }
