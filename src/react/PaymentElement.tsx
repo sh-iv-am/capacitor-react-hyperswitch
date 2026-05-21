@@ -34,7 +34,9 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
 
     const instanceRef = useRef<PaymentElementType | null>(null);
 
-    function safeRemove(listener: removeListenerFunction | null | undefined): void {
+    function safeRemove(
+      listener: removeListenerFunction | null | undefined,
+    ): void {
       if (!listener) return;
       if (listener instanceof Promise) {
         listener.then((h) => h.remove());
@@ -54,28 +56,31 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
         onChangeListeners.push(pe.on("FORM_STATUS", onChange));
         onChangeListeners.push(pe.on("PAYMENT_METHOD_STATUS", onChange));
         onChangeListeners.push(pe.on("PAYMENT_METHOD_INFO_CARD", onChange));
-        onChangeListeners.push(pe.on("PAYMENT_METHOD_INFO_BILLING_ADDRESS", onChange));
+        onChangeListeners.push(
+          pe.on("PAYMENT_METHOD_INFO_BILLING_ADDRESS", onChange),
+        );
       }
 
       pe.mount(`#${domId}`);
       let element = document.getElementById(domId);
-      element?.addEventListener("confirmPayment", (e: any) => {
+      let listener = element?.addEventListener("confirmPayment", (e: any) => {
         const { options, onResult } = (e as CustomEvent).detail;
         onResult(pe.confirmPayment(options));
       });
-      let onPaymentResultListener = pe.onPaymentResult((data) => {
-        onPaymentResult ? onPaymentResult(data) : null;
-      });
-      let onConfirmClicklistener = pe.onPaymentConfirmButtonClick((data) => {
-        if (onPaymentConfirmButtonClick) {
-          try {
-            return onPaymentConfirmButtonClick(data);
-          } catch (e) {
-            return false;
-          }
-        }
-        return true;
-      });
+      let onPaymentResultListener = onPaymentResult
+        ? pe.onPaymentResult((data) => {
+            onPaymentResult(data);
+          })
+        : null;
+      let onConfirmClicklistener = onPaymentConfirmButtonClick
+        ? pe.onPaymentConfirmButtonClick((data) => {
+            try {
+              return onPaymentConfirmButtonClick(data);
+            } catch (e) {
+              return false;
+            }
+          })
+        : null;
 
       if (onReady) onReady();
 
@@ -84,6 +89,9 @@ const PaymentElement = forwardRef<PaymentElementHandle, PaymentElementProps>(
         instanceRef.current = null;
         safeRemove(onPaymentResultListener);
         safeRemove(onConfirmClicklistener);
+        if (listener) {
+          element?.removeEventListener("confirmPayment", listener);
+        }
         onChangeListeners.forEach(safeRemove);
       };
     }, [elements]);
