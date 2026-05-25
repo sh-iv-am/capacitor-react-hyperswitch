@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo } from 'react';
 import type {
   PaymentSession,
   PaymentSessionConfiguration,
@@ -6,18 +6,16 @@ import type {
   PaymentElementHandle,
   ElementsActions,
   CustomerSavedPaymentMethodsSession,
-} from "../definitions";
-import { useHyperElementsContext } from "./HyperElements";
+} from '../definitions';
+import { useHyperElementsContext } from './HyperElements';
 
 export function usePaymentSession(): PaymentSession | null {
   const { paymentSession } = useHyperElementsContext();
 
   const updateIntent = useCallback(
-    async (
-      intentResolver: () => Promise<PaymentSessionConfiguration>,
-    ): Promise<void> => {
+    async (intentResolver: () => Promise<PaymentSessionConfiguration>): Promise<void> => {
       if (!paymentSession) {
-        throw new Error("HyperElements is not initialized");
+        throw new Error('HyperElements is not initialized');
       }
 
       return paymentSession.updateIntent(intentResolver);
@@ -26,8 +24,7 @@ export function usePaymentSession(): PaymentSession | null {
   );
 
   return useMemo(
-    () =>
-      paymentSession ? { ...paymentSession, updateIntent } : paymentSession,
+    () => (paymentSession ? { ...paymentSession, updateIntent } : paymentSession),
     [paymentSession, updateIntent],
   );
 }
@@ -40,7 +37,7 @@ export function useElements(): ElementsActions {
       paymentElement: React.RefObject<PaymentElementHandle | null> | string,
       options?: { confirmParams?: Record<string, Object> },
     ): Promise<PaymentResult> => {
-      if (typeof paymentElement === "string") {
+      if (typeof paymentElement === 'string') {
         const element = document.getElementById(paymentElement);
 
         if (!element) {
@@ -49,7 +46,7 @@ export function useElements(): ElementsActions {
 
         return new Promise<PaymentResult>((resolve, _) => {
           element.dispatchEvent(
-            new CustomEvent("confirmPayment", {
+            new CustomEvent('confirmPayment', {
               bubbles: true,
               cancelable: true,
               detail: {
@@ -65,7 +62,7 @@ export function useElements(): ElementsActions {
         const paymentElementRef = paymentElement.current;
 
         if (!paymentElementRef) {
-          throw new Error("PaymentElement is not mounted");
+          throw new Error('PaymentElement is not mounted');
         }
 
         return paymentElementRef.confirmPayment(options);
@@ -75,11 +72,9 @@ export function useElements(): ElementsActions {
   );
 
   const updateIntent = useCallback(
-    async (
-      intentResolver: () => Promise<PaymentSessionConfiguration>,
-    ): Promise<void> => {
+    async (intentResolver: () => Promise<PaymentSessionConfiguration>): Promise<void> => {
       if (!elements) {
-        throw new Error("HyperElements is not initialized");
+        throw new Error('HyperElements is not initialized');
       }
 
       return elements.updateIntent(intentResolver);
@@ -87,14 +82,13 @@ export function useElements(): ElementsActions {
     [elements],
   );
 
-  const getCustomerSavedPaymentMethods =
-    useCallback(async (): Promise<CustomerSavedPaymentMethodsSession> => {
-      if (!elements) {
-        throw new Error("HyperElements is not initialized");
-      }
+  const getCustomerSavedPaymentMethods = useCallback(async (): Promise<CustomerSavedPaymentMethodsSession> => {
+    if (!elements) {
+      throw new Error('HyperElements is not initialized');
+    }
 
-      return elements.getCustomerSavedPaymentMethods();
-    }, [elements]);
+    return elements.getCustomerSavedPaymentMethods();
+  }, [elements]);
 
   return {
     getCustomerSavedPaymentMethods,

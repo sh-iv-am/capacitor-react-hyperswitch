@@ -1,19 +1,12 @@
-import React, {
-  forwardRef,
-  useEffect,
-  useId,
-  useImperativeHandle,
-  useRef,
-  type CSSProperties,
-} from "react";
-import { useHyperElementsContext } from "./HyperElements";
-import { registerWidget, unregisterWidget } from "./widget-registry";
+import React, { forwardRef, useEffect, useId, useImperativeHandle, useRef, type CSSProperties } from 'react';
+import { useHyperElementsContext } from './HyperElements';
+import { registerWidget, unregisterWidget } from './widget-registry';
 import type {
   CvcWidget as CvcWidgetType,
   CvcWidgetOptions,
   PaymentEventData,
   removeListenerFunction,
-} from "../definitions";
+} from '../definitions';
 
 export interface CvcWidgetHandle {
   unmount(): void;
@@ -30,94 +23,86 @@ export interface CvcWidgetProps {
   className?: string;
 }
 
-const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(
-  function CvcWidgetComponent(
-    { id, options, onChange, onFocus, onBlur, onReady, style, className },
-    ref,
-  ) {
-    const { elements } = useHyperElementsContext();
+const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(function CvcWidgetComponent(
+  { id, options, onChange, onFocus, onBlur, onReady, style, className },
+  ref,
+) {
+  const { elements } = useHyperElementsContext();
 
-    const reactId = useId();
-    const domId = `hs-cvc-widget-${reactId.replace(/:/g, "")}`;
+  const reactId = useId();
+  const domId = `hs-cvc-widget-${reactId.replace(/:/g, '')}`;
 
-    const instanceRef = useRef<CvcWidgetType | null>(null);
+  const instanceRef = useRef<CvcWidgetType | null>(null);
 
-    function safeRemove(listener: removeListenerFunction | null | undefined): void {
-      if (!listener) return;
-      if (listener instanceof Promise) {
-        listener.then((h) => h.remove());
-      } else {
-        listener.remove();
-      }
+  function safeRemove(listener: removeListenerFunction | null | undefined): void {
+    if (!listener) return;
+    if (listener instanceof Promise) {
+      listener.then((h) => h.remove());
+    } else {
+      listener.remove();
+    }
+  }
+
+  useEffect(() => {
+    if (!elements) return;
+
+    const widget = elements.create({ type: 'cvcWidget', options });
+    instanceRef.current = widget;
+
+    let wasFocused = false;
+
+    let onChangeListener: removeListenerFunction | null = null;
+    if (onChange || onFocus || onBlur) {
+      onChangeListener = widget.on('change', (data: any) => {
+        if (onChange) onChange(data);
+        if ((onFocus || onBlur) && data?.type === 'CVC_STATUS') {
+          const cvcStatus = (data?.payload as Record<string, unknown> | undefined)?.cvcStatus as
+            | Record<string, unknown>
+            | undefined;
+          const isFocused = !!cvcStatus?.isCvcFocused;
+          if (isFocused && !wasFocused && onFocus) onFocus();
+          if (!isFocused && wasFocused && onBlur) onBlur();
+          wasFocused = isFocused;
+        }
+      });
     }
 
-    useEffect(() => {
-      if (!elements) return;
+    widget.mount(`#${domId}`);
 
-      const widget = elements.create({ type: "cvcWidget", options });
-      instanceRef.current = widget;
+    if (id) {
+      registerWidget(id, widget);
+    }
 
-      let wasFocused = false;
+    if (onReady) {
+      onReady();
+    }
 
-      let onChangeListener: removeListenerFunction | null = null;
-      if (onChange || onFocus || onBlur) {
-        onChangeListener = widget.on("change", (data: any) => {
-          if (onChange) onChange(data);
-          if ((onFocus || onBlur) && data?.type === "CVC_STATUS") {
-            const cvcStatus = (
-              data?.payload as Record<string, unknown> | undefined
-            )?.cvcStatus as Record<string, unknown> | undefined;
-            const isFocused = !!cvcStatus?.isCvcFocused;
-            if (isFocused && !wasFocused && onFocus) onFocus();
-            if (!isFocused && wasFocused && onBlur) onBlur();
-            wasFocused = isFocused;
-          }
-        });
-      }
-
-      widget.mount(`#${domId}`);
-
+    return () => {
       if (id) {
-        registerWidget(id, widget);
+        unregisterWidget(id);
       }
+      widget.unmount();
+      safeRemove(onChangeListener);
+      instanceRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elements]);
 
-      if (onReady) {
-        onReady();
-      }
-
-      return () => {
+  useImperativeHandle(
+    ref,
+    () => ({
+      unmount() {
         if (id) {
           unregisterWidget(id);
         }
-        widget.unmount();
-        safeRemove(onChangeListener);
+        instanceRef.current?.unmount();
         instanceRef.current = null;
-      };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [elements]);
+      },
+    }),
+    [id],
+  );
 
-    useImperativeHandle(
-      ref,
-      () => ({
-        unmount() {
-          if (id) {
-            unregisterWidget(id);
-          }
-          instanceRef.current?.unmount();
-          instanceRef.current = null;
-        },
-      }),
-      [id],
-    );
-
-    return (
-      <div
-        id={domId}
-        className={className}
-        style={{ minHeight: "inherit", width: "100%", ...style }}
-      />
-    );
-  },
-);
+  return <div id={domId} className={className} style={{ minHeight: 'inherit', width: '100%', ...style }} />;
+});
 
 export default CvcWidget;

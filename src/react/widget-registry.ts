@@ -1,4 +1,4 @@
-import type { CvcWidget } from "../definitions";
+import type { CvcWidget } from '../definitions';
 
 const registry = new Map<string, CvcWidget>();
 

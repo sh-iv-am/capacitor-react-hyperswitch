@@ -1,15 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import type {
-  PaymentSession,
-  Elements,
-  HyperswitchSession,
-} from "../definitions";
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import type { PaymentSession, Elements, HyperswitchSession } from '../definitions';
 
 interface HyperElementsContext {
   paymentSession: PaymentSession | null;
@@ -18,11 +8,9 @@ interface HyperElementsContext {
   error: Error | null;
 }
 
-const HyperElementsContext = createContext<HyperElementsContext | undefined>(
-  undefined,
-);
+const HyperElementsContext = createContext<HyperElementsContext | undefined>(undefined);
 
-HyperElementsContext.displayName = "HyperElementsContext";
+HyperElementsContext.displayName = 'HyperElementsContext';
 
 export interface HyperElementsProps {
   hyper: Promise<HyperswitchSession> | null;
@@ -30,14 +18,8 @@ export interface HyperElementsProps {
   children: ReactNode;
 }
 
-export function HyperElements({
-  hyper,
-  options,
-  children,
-}: HyperElementsProps) {
-  const [paymentSession, setPaymentSession] = useState<PaymentSession | null>(
-    null,
-  );
+export function HyperElements({ hyper, options, children }: HyperElementsProps) {
+  const [paymentSession, setPaymentSession] = useState<PaymentSession | null>(null);
   const [elements, setElements] = useState<Elements | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -59,8 +41,8 @@ export function HyperElements({
             presentPaymentSheet: (_) =>
               new Promise((resolve, _) => {
                 resolve({
-                  type: "failed",
-                  message: "Function not available, use initPaymentSession",
+                  type: 'failed',
+                  message: 'Function not available, use initPaymentSession',
                 });
               }),
           });
@@ -81,9 +63,7 @@ export function HyperElements({
   }, [hyper, options.sdkAuthorization]);
 
   return (
-    <HyperElementsContext.Provider
-      value={{ paymentSession, elements, loading, error }}
-    >
+    <HyperElementsContext.Provider value={{ paymentSession, elements, loading, error }}>
       {children}
     </HyperElementsContext.Provider>
   );
@@ -92,9 +72,7 @@ export function HyperElements({
 export function useHyperElementsContext(): HyperElementsContext {
   const ctx = useContext(HyperElementsContext);
   if (ctx === undefined) {
-    throw new Error(
-      "useHyperElementsContext must be used inside <HyperElements>",
-    );
+    throw new Error('useHyperElementsContext must be used inside <HyperElements>');
   }
   return ctx;
 }
