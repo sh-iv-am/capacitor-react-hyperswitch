@@ -8,6 +8,7 @@ import {
 } from "@juspay-tech/capacitor-react-hyperswitch";
 import type { PaymentElementHandle } from "@juspay-tech/capacitor-react-hyperswitch";
 import type { FetchedData } from "../App";
+import { logPaymentEvent } from "../logPaymentEvent";
 
 // ── Inner checkout form — must live inside <HyperElements> ────────────────────
 
@@ -76,7 +77,18 @@ function CheckoutForm({
         {mounted ? (
           <PaymentElement
             ref={paymentRef}
-            onReady={() => console.log("[Example] PaymentElement ready")}
+            options={{
+              subscriptionEvents: [
+                "paymentMethodChange",
+                "cardDetailsChange",
+                "formStatusChange",
+                "billingDetailsChange",
+              ],
+            }}
+            onChange={logPaymentEvent}
+            onReady={() => console.log("[Example] PaymentElement ready (payment methods loaded)")}
+            onFocus={() => console.log("[Example] PaymentElement focused")}
+            onBlur={() => console.log("[Example] PaymentElement blurred")}
             style={{ width: "100%", height: "100%" }}
           />
         ) : (

@@ -4,7 +4,7 @@ import { registerWidget, unregisterWidget } from './widget-registry';
 import type {
   CvcWidget as CvcWidgetType,
   CvcWidgetOptions,
-  PaymentEventData,
+  PaymentEvent,
   removeListenerFunction,
 } from '../definitions';
 
@@ -15,9 +15,13 @@ export interface CvcWidgetHandle {
 export interface CvcWidgetProps {
   id?: string;
   options?: CvcWidgetOptions;
-  onChange?: (data?: PaymentEventData) => void;
+  /** Receives every event listed in `options.subscriptionEvents`; filter on `event.eventName`. */
+  onChange?: (event: PaymentEvent) => void;
+  /** Fires when the CVC input gains focus. No subscription needed. */
   onFocus?: () => void;
+  /** Fires when the CVC input loses focus. No subscription needed. */
   onBlur?: () => void;
+  /** Fires when the native widget reports `ready` (on its mount), not when this component mounts. */
   onReady?: () => void;
   style?: CSSProperties;
   className?: string;
@@ -33,6 +37,9 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(function CvcWidget
   const domId = `hs-cvc-widget-${reactId.replace(/:/g, '')}`;
 
   const instanceRef = useRef<CvcWidgetType | null>(null);
+  // Listeners are registered once per mount and read the latest handler props from here.
+  const handlersRef = useRef({ onChange, onFocus, onBlur, onReady });
+  handlersRef.current = { onChange, onFocus, onBlur, onReady };
 
   function safeRemove(listener: removeListenerFunction | null | undefined): void {
     if (!listener) return;
@@ -49,23 +56,13 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(function CvcWidget
     const widget = elements.create({ type: 'cvcWidget', options });
     instanceRef.current = widget;
 
-    let wasFocused = false;
-
-    let onChangeListener: removeListenerFunction | null = null;
-    if (onChange || onFocus || onBlur) {
-      onChangeListener = widget.on('change', (data: any) => {
-        if (onChange) onChange(data);
-        if ((onFocus || onBlur) && data?.type === 'CVC_STATUS') {
-          const cvcStatus = (data?.payload as Record<string, unknown> | undefined)?.cvcStatus as
-            | Record<string, unknown>
-            | undefined;
-          const isFocused = !!cvcStatus?.isCvcFocused;
-          if (isFocused && !wasFocused && onFocus) onFocus();
-          if (!isFocused && wasFocused && onBlur) onBlur();
-          wasFocused = isFocused;
-        }
-      });
-    }
+    // Registered before mount so the widget's `ready` (fired on its mount) is not missed.
+    const listeners: (removeListenerFunction | null)[] = [
+      widget.on('change', (event: PaymentEvent) => handlersRef.current.onChange?.(event)),
+      widget.on('ready', () => handlersRef.current.onReady?.()),
+      widget.on('focus', () => handlersRef.current.onFocus?.()),
+      widget.on('blur', () => handlersRef.current.onBlur?.()),
+    ];
 
     widget.mount(`#${domId}`);
 
@@ -73,16 +70,12 @@ const CvcWidget = forwardRef<CvcWidgetHandle, CvcWidgetProps>(function CvcWidget
       registerWidget(id, widget);
     }
 
-    if (onReady) {
-      onReady();
-    }
-
     return () => {
       if (id) {
         unregisterWidget(id);
       }
       widget.unmount();
-      safeRemove(onChangeListener);
+      listeners.forEach(safeRemove);
       instanceRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

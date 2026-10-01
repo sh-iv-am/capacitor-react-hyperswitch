@@ -10,6 +10,7 @@ import {
   CvcWidget,
 } from "@juspay-tech/capacitor-react-hyperswitch";
 import type { FetchedData } from "../App";
+import { logPaymentEvent } from "../logPaymentEvent";
 
 interface Props {
   fetchedData: FetchedData | null;
@@ -189,6 +190,10 @@ export default function Flow1InitPaymentSession({
         >
           {cvcMounted && (
             <CvcWidget
+              options={{ subscriptionEvents: ["cvcStatusChange"] }}
+              onChange={logPaymentEvent}
+              onFocus={() => console.log("[Example] CVC focused")}
+              onBlur={() => console.log("[Example] CVC blurred")}
               onReady={() => console.log("[Example] CvcWidget ready")}
               style={{ minHeight: 50 }}
             />

@@ -24,6 +24,80 @@ Sync native files
 npx cap sync
 ```
 
+## Payment events
+
+List the events you want in `subscriptionEvents` when creating an element, then handle them all in
+one `on('change')` listener, branching on `eventName`. Nothing is emitted for events you don't list.
+
+| `eventName`            | Emitted by     | `payload`                                                                  |
+| ---------------------- | -------------- | -------------------------------------------------------------------------- |
+| `paymentMethodChange`  | PaymentElement | `paymentMethod`, `paymentMethodType`, `isSavedPaymentMethod`, `isOneClickWallet` |
+| `cardDetailsChange`    | PaymentElement | `bin`, `extendedBin`, `last4`, `brand`, `expiryMonth`, `expiryYear`, completeness/validity flags |
+| `formStatusChange`     | PaymentElement | `status`: `EMPTY` \| `FILLING` \| `COMPLETE`                              |
+| `billingDetailsChange` | PaymentElement | `country`, `state`, `postalCode`                                           |
+| `cvcStatusChange`      | CvcWidget      | `cvcStatus`: `{ isCvcEmpty, isCvcComplete }` (nested) |
+
+```ts
+const paymentElement = elements.create({
+  type: 'paymentElement',
+  options: { subscriptionEvents: ['paymentMethodChange', 'formStatusChange'] },
+});
+paymentElement.on('change', (event) => {
+  if (event.eventName === 'formStatusChange') {
+    payButton.disabled = event.payload.status !== 'COMPLETE';
+  }
+});
+paymentElement.mount('#payment-element');
+```
+
+The same works for `elements.create({ type: 'cvcWidget', options: { subscriptionEvents: ['cvcStatusChange'] } })`
+and for the sheet: `session.presentPaymentSheet({ ...options, subscriptionEvents: [...] }, (event) => { ... })`.
+
+The previous `subscribedEvents` option and per-event listeners such as `on('FORM_STATUS', …)` still work
+but are deprecated; old names map to the new ones (`PAYMENT_METHOD_INFO_CARD` → `cardDetailsChange`,
+`PAYMENT_METHOD_STATUS` → `paymentMethodChange`, `FORM_STATUS` → `formStatusChange`,
+`PAYMENT_METHOD_INFO_BILLING_ADDRESS` → `billingDetailsChange`, `CVC_STATUS` → `cvcStatusChange`).
+The deprecated `type` field on a delivered event keeps the old name, so `event.type === 'CVC_STATUS'` still matches.
+
+**Breaking:** the CVC widget no longer sends its status unasked. List `cvcStatusChange` in its
+`subscriptionEvents` to receive it (previously it was always delivered).
+
+### Lifecycle events
+
+`ready`, `focus` and `blur` need no subscription and never reach `on('change')`.
+Their handlers take no arguments; they just fire:
+
+| Event   | PaymentElement                                               | CvcWidget        |
+| ------- | ------------------------------------------------------------ | ---------------- |
+| `ready` | Initial loading finished (payment methods fetched, or failed) | On mount         |
+| `focus` | Focus enters the element (field-to-field moves do not re-fire) | CVC input focus  |
+| `blur`  | Focus leaves the element entirely                             | CVC input blur   |
+
+```ts
+paymentElement.on('ready', () => showForm());
+paymentElement.on('focus', () => console.log('focused'));
+paymentElement.on('blur', () => console.log('blurred'));
+```
+
+The payment sheet has no lifecycle events. The web fallback (browser testing only) forwards whatever
+events its hosted iframe posts, on the same channels, and does not guarantee any of them.
+
+With the React components, pass `subscriptionEvents` in `options` and an `onChange` prop:
+
+```tsx
+<PaymentElement
+  options={{ subscriptionEvents: ['paymentMethodChange', 'formStatusChange'] }}
+  onChange={(event) => {
+    if (event.eventName === 'formStatusChange') setCanPay(event.payload.status === 'COMPLETE');
+  }}
+/>
+<CvcWidget options={{ subscriptionEvents: ['cvcStatusChange'] }} onChange={handleCvc} />
+```
+
+`onReady`, `onFocus` and `onBlur` on `<PaymentElement>` and `<CvcWidget>` map to the lifecycle
+events above. `onReady` fires when the native element reports `ready` (for PaymentElement, once
+payment methods are loaded), no longer immediately after the component mounts.
+
 ## API
 
 <docgen-index>
