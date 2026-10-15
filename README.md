@@ -53,11 +53,9 @@ paymentElement.mount('#payment-element');
 The same works for `elements.create({ type: 'cvcWidget', options: { subscriptionEvents: ['cvcStatusChange'] } })`
 and for the sheet: `session.presentPaymentSheet({ ...options, subscriptionEvents: [...] }, (event) => { ... })`.
 
-The previous `subscribedEvents` option and per-event listeners such as `on('FORM_STATUS', …)` still work
-but are deprecated; old names map to the new ones (`PAYMENT_METHOD_INFO_CARD` → `cardDetailsChange`,
-`PAYMENT_METHOD_STATUS` → `paymentMethodChange`, `FORM_STATUS` → `formStatusChange`,
-`PAYMENT_METHOD_INFO_BILLING_ADDRESS` → `billingDetailsChange`, `CVC_STATUS` → `cvcStatusChange`).
-The deprecated `type` field on a delivered event keeps the old name, so `event.type === 'CVC_STATUS'` still matches.
+Only `subscriptionEvents` with camelCase names and the `change` handler are supported.
+Legacy uppercase names, `subscribedEvents`, per-event listeners, and the event `type` alias
+have been removed. Read `{ eventName, payload }` in `onChange`.
 
 **Breaking:** the CVC widget no longer sends its status unasked. List `cvcStatusChange` in its
 `subscriptionEvents` to receive it (previously it was always delivered).
@@ -1433,7 +1431,7 @@ Creates a new function.
 | **`customer`**                                     | <code><a href="#customerconfiguration">CustomerConfiguration</a></code>           |
 | **`paymentSheetHeaderLabel`**                      | <code>string</code>                                                               |
 | **`savedPaymentSheetHeaderLabel`**                 | <code>string</code>                                                               |
-| **`subscribedEvents`**                             | <code>SubscriptionEvent[]</code>                                                  |
+| **`subscriptionEvents`**                             | <code>SubscriptionEvent[]</code>                                                  |
 | **`hideConfirmButton`**                            | <code>boolean</code>                                                              |
 | **`locale`**                                       | <code><a href="#locale">locale</a></code>                                         |
 | **`redirectionInfo`**                              | <code><a href="#redirectioninfo">RedirectionInfo</a></code>                       |
@@ -1809,7 +1807,7 @@ Construct a type with a set of properties K of type T
 
 #### SubscriptionEvent
 
-<code>'PAYMENT_METHOD_INFO_CARD' | 'PAYMENT_METHOD_STATUS' | 'FORM_STATUS' | 'PAYMENT_METHOD_INFO_BILLING_ADDRESS'</code>
+<code>'cardDetailsChange' | 'paymentMethodChange' | 'formStatusChange' | 'billingDetailsChange' | 'cvcStatusChange'</code>
 
 
 #### locale
