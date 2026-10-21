@@ -29,6 +29,11 @@ npx cap sync
 List the events you want in `subscriptionEvents` when creating an element, then handle them all in
 one `on('change')` listener, branching on `eventName`. Nothing is emitted for events you don't list.
 
+`PaymentEvent` is a discriminated union. Checking `eventName` narrows `payload` to its
+matching model, so reading fields from another event is a compile-time error. Card metadata
+can be null, form status is restricted to its three values, and CVC flags stay nested under
+`cvcStatus`.
+
 | `eventName`            | Emitted by     | `payload`                                                                  |
 | ---------------------- | -------------- | -------------------------------------------------------------------------- |
 | `paymentMethodChange`  | PaymentElement | `paymentMethod`, `paymentMethodType`, `isSavedPaymentMethod`, `isOneClickWallet` |
